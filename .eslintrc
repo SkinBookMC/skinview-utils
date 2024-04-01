@@ -6,11 +6,11 @@
     [
       "eslint:recommended",
       "plugin:@typescript-eslint/eslint-recommended",
-      "plugin:@typescript-eslint/recommended",
+      "plugin:@typescript-eslint/recommended"
     ],
   "rules":
     {
       "@typescript-eslint/no-non-null-assertion": "off",
-      "@typescript-eslint/camelcase": "off",
-    },
+      "@typescript-eslint/camelcase": "off"
+    }
 }
