@@ -1,8 +1,16 @@
-import { TextureCanvas, TextureSource, ModelType } from "./types.js";
+import type { TextureCanvas, TextureSource, ModelType } from "./types.js";
 
-type CanvasContext = CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
+type CanvasContext =
+	| CanvasRenderingContext2D
+	| OffscreenCanvasRenderingContext2D;
 
-function hasTransparency(context: CanvasImageData, x0: number, y0: number, w: number, h: number): boolean {
+function hasTransparency(
+	context: CanvasImageData,
+	x0: number,
+	y0: number,
+	w: number,
+	h: number
+): boolean {
 	const imgData = context.getImageData(x0, y0, w, h);
 	for (let x = 0; x < w; x++) {
 		for (let y = 0; y < h; y++) {
@@ -19,17 +27,19 @@ function computeSkinScale(width: number): number {
 	return width / 64.0;
 }
 
-function fixOpaqueSkin(context: CanvasImageData & CanvasRect, width: number, format1_8: boolean): void {
+function fixOpaqueSkin(
+	context: CanvasImageData & CanvasRect,
+	width: number,
+	format1_8: boolean
+): void {
 	// see https://github.com/bs-community/skinview3d/issues/15
 	// see https://github.com/bs-community/skinview3d/issues/93
 
 	// check whether the skin has opaque background
 	if (format1_8) {
-		if (hasTransparency(context, 0, 0, width, width))
-			return;
+		if (hasTransparency(context, 0, 0, width, width)) return;
 	} else {
-		if (hasTransparency(context, 0, 0, width, width / 2))
-			return;
+		if (hasTransparency(context, 0, 0, width, width / 2)) return;
 	}
 
 	const scale = computeSkinScale(width);
@@ -83,8 +93,25 @@ function convertSkinTo1_8(context: CanvasContext, width: number): void {
 	context.scale(-1, 1);
 
 	const scale = computeSkinScale(width);
-	const copySkin = (sX: number, sY: number, w: number, h: number, dX: number, dY: number): void =>
-		context.drawImage(context.canvas, sX * scale, sY * scale, w * scale, h * scale, -dX * scale, dY * scale, -w * scale, h * scale);
+	const copySkin = (
+		sX: number,
+		sY: number,
+		w: number,
+		h: number,
+		dX: number,
+		dY: number
+	): void =>
+		context.drawImage(
+			context.canvas,
+			sX * scale,
+			sY * scale,
+			w * scale,
+			h * scale,
+			-dX * scale,
+			dY * scale,
+			-w * scale,
+			h * scale
+		);
 
 	copySkin(4, 16, 4, 4, 20, 48); // Top Leg
 	copySkin(8, 16, 4, 4, 24, 48); // Bottom Leg
@@ -102,7 +129,10 @@ function convertSkinTo1_8(context: CanvasContext, width: number): void {
 	context.restore();
 }
 
-export function loadSkinToCanvas(canvas: TextureCanvas, image: TextureSource): void {
+export function loadSkinToCanvas(
+	canvas: TextureCanvas,
+	image: TextureSource
+): void {
 	let isOldFormat = false;
 	if (image.width !== image.height) {
 		if (image.width === 2 * image.height) {
@@ -112,7 +142,9 @@ export function loadSkinToCanvas(canvas: TextureCanvas, image: TextureSource): v
 		}
 	}
 
-	const context = canvas.getContext("2d", { willReadFrequently: true }) as CanvasContext;
+	const context = canvas.getContext("2d", {
+		willReadFrequently: true,
+	}) as CanvasContext;
 	if (isOldFormat) {
 		const sideLength = image.width;
 		canvas.width = sideLength;
@@ -145,27 +177,62 @@ function computeCapeScale(image: TextureSource): number {
 	}
 }
 
-export function loadCapeToCanvas(canvas: TextureCanvas, image: TextureSource): void {
+export function loadCapeToCanvas(
+	canvas: TextureCanvas,
+	image: TextureSource,
+	frame?: number
+): void {
 	const scale = computeCapeScale(image);
 	canvas.width = 64 * scale;
 	canvas.height = 32 * scale;
 
-	const context = canvas.getContext("2d", { willReadFrequently: true }) as CanvasContext;
+	frame = frame != undefined ? frame : 1;
+
+	const frameWidth = image.width;
+	let frameHeight = image.height;
+	let frameOffset = 0;
+
+	if (frameHeight >= frameWidth) {
+		frameHeight = frameWidth / 2;
+		frameOffset = frameHeight * (frame - 1);
+	}
+
+	const context = canvas.getContext("2d", {
+		willReadFrequently: true,
+	}) as CanvasContext;
 	context.clearRect(0, 0, canvas.width, canvas.height);
-	context.drawImage(image, 0, 0, image.width, image.height);
+	context.drawImage(
+		image,
+		0,
+		frameOffset,
+		frameWidth,
+		frameHeight,
+		0,
+		0,
+		frameWidth,
+		frameHeight
+	);
 }
 
-function isAreaBlack(context: CanvasImageData, x0: number, y0: number, w: number, h: number): boolean {
+function isAreaBlack(
+	context: CanvasImageData,
+	x0: number,
+	y0: number,
+	w: number,
+	h: number
+): boolean {
 	const imgData = context.getImageData(x0, y0, w, h);
 	for (let x = 0; x < w; x++) {
 		for (let y = 0; y < h; y++) {
 			const offset = (x + y * w) * 4;
-			if (!(
-				imgData.data[offset + 0] === 0 &&
-				imgData.data[offset + 1] === 0 &&
-				imgData.data[offset + 2] === 0 &&
-				imgData.data[offset + 3] === 0xff
-			)) {
+			if (
+				!(
+					imgData.data[offset + 0] === 0 &&
+					imgData.data[offset + 1] === 0 &&
+					imgData.data[offset + 2] === 0 &&
+					imgData.data[offset + 3] === 0xff
+				)
+			) {
 				return false;
 			}
 		}
@@ -173,17 +240,25 @@ function isAreaBlack(context: CanvasImageData, x0: number, y0: number, w: number
 	return true;
 }
 
-function isAreaWhite(context: CanvasImageData, x0: number, y0: number, w: number, h: number): boolean {
+function isAreaWhite(
+	context: CanvasImageData,
+	x0: number,
+	y0: number,
+	w: number,
+	h: number
+): boolean {
 	const imgData = context.getImageData(x0, y0, w, h);
 	for (let x = 0; x < w; x++) {
 		for (let y = 0; y < h; y++) {
 			const offset = (x + y * w) * 4;
-			if (!(
-				imgData.data[offset + 0] === 0xff &&
-				imgData.data[offset + 1] === 0xff &&
-				imgData.data[offset + 2] === 0xff &&
-				imgData.data[offset + 3] === 0xff
-			)) {
+			if (
+				!(
+					imgData.data[offset + 0] === 0xff &&
+					imgData.data[offset + 1] === 0xff &&
+					imgData.data[offset + 2] === 0xff &&
+					imgData.data[offset + 3] === 0xff
+				)
+			) {
 				return false;
 			}
 		}
@@ -233,32 +308,33 @@ export function inferModelType(canvas: TextureCanvas): ModelType {
 	// If the 4 areas are all black or all white, the skin is also considered as slim.
 
 	const scale = computeSkinScale(canvas.width);
-	const context = canvas.getContext("2d", { willReadFrequently: true }) as CanvasContext;
-	const checkTransparency = (x: number, y: number, w: number, h: number): boolean =>
+	const context = canvas.getContext("2d", {
+		willReadFrequently: true,
+	}) as CanvasContext;
+	const checkTransparency = (
+		x: number,
+		y: number,
+		w: number,
+		h: number
+	): boolean =>
 		hasTransparency(context, x * scale, y * scale, w * scale, h * scale);
 	const checkBlack = (x: number, y: number, w: number, h: number): boolean =>
 		isAreaBlack(context, x * scale, y * scale, w * scale, h * scale);
 	const checkWhite = (x: number, y: number, w: number, h: number): boolean =>
 		isAreaWhite(context, x * scale, y * scale, w * scale, h * scale);
 	const isSlim =
-		(
-			checkTransparency(50, 16, 2, 4) ||
-			checkTransparency(54, 20, 2, 12) ||
-			checkTransparency(42, 48, 2, 4) ||
-			checkTransparency(46, 52, 2, 12)
-		) ||
-		(
-			checkBlack(50, 16, 2, 4) &&
+		checkTransparency(50, 16, 2, 4) ||
+		checkTransparency(54, 20, 2, 12) ||
+		checkTransparency(42, 48, 2, 4) ||
+		checkTransparency(46, 52, 2, 12) ||
+		(checkBlack(50, 16, 2, 4) &&
 			checkBlack(54, 20, 2, 12) &&
 			checkBlack(42, 48, 2, 4) &&
-			checkBlack(46, 52, 2, 12)
-		) ||
-		(
-			checkWhite(50, 16, 2, 4) &&
+			checkBlack(46, 52, 2, 12)) ||
+		(checkWhite(50, 16, 2, 4) &&
 			checkWhite(54, 20, 2, 12) &&
 			checkWhite(42, 48, 2, 4) &&
-			checkWhite(46, 52, 2, 12)
-		);
+			checkWhite(46, 52, 2, 12));
 	return isSlim ? "slim" : "default";
 }
 
@@ -270,17 +346,25 @@ function computeEarsScale(image: TextureSource): number {
 	}
 }
 
-export function loadEarsToCanvas(canvas: TextureCanvas, image: TextureSource): void {
+export function loadEarsToCanvas(
+	canvas: TextureCanvas,
+	image: TextureSource
+): void {
 	const scale = computeEarsScale(image);
 	canvas.width = 14 * scale;
 	canvas.height = 7 * scale;
 
-	const context = canvas.getContext("2d", { willReadFrequently: true }) as CanvasContext;
+	const context = canvas.getContext("2d", {
+		willReadFrequently: true,
+	}) as CanvasContext;
 	context.clearRect(0, 0, canvas.width, canvas.height);
 	context.drawImage(image, 0, 0, image.width, image.height);
 }
 
-export function loadEarsToCanvasFromSkin(canvas: TextureCanvas, image: TextureSource): void {
+export function loadEarsToCanvasFromSkin(
+	canvas: TextureCanvas,
+	image: TextureSource
+): void {
 	if (image.width !== image.height && image.width !== 2 * image.height) {
 		throw new Error(`Bad skin size: ${image.width}x${image.height}`);
 	}
@@ -290,7 +374,9 @@ export function loadEarsToCanvasFromSkin(canvas: TextureCanvas, image: TextureSo
 	const h = 7 * scale;
 	canvas.width = w;
 	canvas.height = h;
-	const context = canvas.getContext("2d", { willReadFrequently: true }) as CanvasContext;
+	const context = canvas.getContext("2d", {
+		willReadFrequently: true,
+	}) as CanvasContext;
 	context.clearRect(0, 0, w, h);
 	context.drawImage(image, 24 * scale, 0, w, h, 0, 0, w, h);
 }

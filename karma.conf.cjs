@@ -11,12 +11,14 @@ module.exports = function (config) {
 		singleRun: true,
 		rollupPreprocessor: {
 			plugins: [
-				require("@rollup/plugin-typescript")({ tsconfig: "test/tsconfig.json" }),
+				require("@rollup/plugin-typescript")({
+					tsconfig: "test/tsconfig.json",
+				}),
 				require("@rollup/plugin-image")(),
 				require("@rollup/plugin-node-resolve").nodeResolve(),
-				require("@rollup/plugin-commonjs")()
+				require("@rollup/plugin-commonjs")(),
 			],
 			output: { format: "iife" },
-		}
+		},
 	});
 };
