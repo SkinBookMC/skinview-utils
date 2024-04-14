@@ -6,8 +6,9 @@ module.exports = function (config) {
 	config.set({
 		frameworks: ["mocha"],
 		files: [{ pattern: "test/test.ts", watched: false }],
-		preprocessors: { "**/*.ts": "rollup" },
+		preprocessors: { "**/*.ts": ['rollup'] },
 		browsers: ["ChromeHeadless"],
+		plugins: ['karma-mocha'],
 		singleRun: true,
 		rollupPreprocessor: {
 			plugins: [

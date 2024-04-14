@@ -1,12 +1,11 @@
 {
 	"name": "@skinbookmc/skinview-utils",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"type": "module",
 	"main": "build/index.js",
 	"scripts": {
-		"build": "tsc --declaration --outDir build --sourceMap -p .",
+		"build": "tsc",
 		"lint": "eslint --ext .ts src",
-		"test": "pnpm run lint && karma start karma.conf.cjs",
 		"prepublishOnly": "rimraf build && pnpm run build"
 	},
 	"devDependencies": {
@@ -20,12 +19,6 @@
 		"@typescript-eslint/parser": "^5.62.0",
 		"chai": "^4.4.1",
 		"eslint": "^8.57.0",
-		"karma": "^6.4.3",
-		"karma-chrome-launcher": "^3.2.0",
-		"karma-mocha": "^2.0.1",
-		"karma-rollup-preprocessor": "^7.0.8",
-		"mocha": "^9.2.2",
-		"puppeteer": "^13.7.0",
 		"rimraf": "^3.0.2",
 		"rollup": "^2.79.1",
 		"typescript": "^4.9.5"

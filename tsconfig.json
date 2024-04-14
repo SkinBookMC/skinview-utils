@@ -1,23 +1,16 @@
 {
 	"compilerOptions": {
 		/* Basic Options */
-		"target": "ES2021",
-		"module": "CommonJS",
-		"moduleResolution": "node",
-		"outDir": "./build/",
-		"rootDir": "./src/",
-		"composite": false,
-		"removeComments": true,
-		"sourceMap": false,
+		"target": "ES2017",
+		"module": "ES2020",
+		"declaration": true,
+		"sourceMap": true,
+		"outDir": "build",
 
 		/* Strict Type-Checking Options */
 		"strict": true,
 		"strictFunctionTypes": true,
 		"noImplicitAny": true,
-
-		/* Additional Checks */
-		"esModuleInterop": true,
-		"resolveJsonModule": true
 	},
 	"include": ["./src/**/*.ts"]
 }
