@@ -1,0 +1,28 @@
+name: Build & Publish
+
+on: [push, pull_request]
+
+permissions:
+    contents: write
+    pull-requests: write
+    packages: write
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v3
+            - uses: pnpm/action-setup@v3
+                with:
+                    node-version: 8
+            - uses: actions/setup-node@v3
+                with:
+                    node-version: 16
+                    registry-url: https://npm.pkg.github.com/
+                    cache: 'pnpm'
+            - run: pnpm install
+            - run: pnpm test
+            - run: npm publish
+                env:
+                    NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
